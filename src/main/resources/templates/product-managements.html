@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Management - Fashion Store Admin</title>
+    <link rel="stylesheet" href="/css/product-management.css">
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar -->
+    <div th:replace="fragments/admin-sidebar :: sidebar"></div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+                <h1 class="header-title">Product Management</h1>
+            </div>
+            <div class="header-user">
+                <span>Hello, Admin</span>
+                <div class="user-avatar">A</div>
+            </div>
+        </header>
+
+        <!-- Product Management Content -->
+        <div class="content-wrapper">
+            <!-- Content Header -->
+            <div class="content-header">
+                <h2 class="content-title">List of Products</h2>
+                <div class="header-actions">
+
+                    <button class="btn btn-secondary">
+                        📤 Export to Excel
+                    </button>
+                    <button class="btn btn-primary" id="addProductBtn">
+                        ➕ Add new Product
+                    </button>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-section">
+                <div class="search-box">
+                    <span class="search-icon">🔍</span>
+
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search by product name, SKU...">
+
+                </div>
+
+                <select id="filterBrand" class="filter-select">
+                    <option value="" disabled selected>Brand</option>
+                    <option value="">All</option>
+                    <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.brandName}"></option>
+                </select>
+
+                <select id="filterCategory" class="filter-select">
+                    <option value="" disabled selected>Category</option>
+                    <option value="">All</option>
+                    <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.categoryName}"></option>
+                </select>
+
+                <select id="filterSubcategory" class="filter-select">
+                    <option value="" disabled selected>SubCategory</option>
+                    <option value="">All</option>
+                    <option th:each="sub : ${subcategories}" th:value="${sub.id}" th:text="${sub.subcategoryName}"></option>
+                </select>
+
+                <select id="filterStatus" class="filter-select">
+                    <option value="" disabled selected>Status</option>
+                    <option value="">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+
+                <select id="filterStock" class="filter-select">
+                    <option value="" disabled selected>Stock Quantity</option>
+                    <option value="">All</option>
+                    <option value="low">Low (&lt; 10)</option>
+                    <option value="medium">Medium (10-50)</option>
+                    <option value="high">High (&gt; 50)</option>
+                </select>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-row">
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${totalProducts}">0</div>
+                    <div class="stat-label">Total Products</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${activeProducts}">0</div>
+                    <div class="stat-label">Selling</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" th:text="${lowStockProducts}">0</div>
+                    <div class="stat-label">Low Stock</div>
+                </div>
+            </div>
+
+            <!-- Product Table -->
+            <div class="table-container">
+                <table class="product-table">
+                    <thead>
+                    <tr>
+                        <th>Product</th>
+                        <th>ID</th>
+                        <th>Category</th>
+                        <th>Sub Category</th>
+                        <th>Brand</th>
+                        <th>Price</th>
+                        <th>Stock Quantity</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr th:each="product : ${products}">
+                        <td>
+                            <div class="product-info">
+                                <div class="product-image">
+                                    <img th:if="${product.image != null}" th:src="@{/products/image/{id}(id=${product.id})}" alt="Product Image" class="img-thumbnail" style="width: 70px; height: 70px;">
+                                    <img th:if="${product.image == null}" th:src="@{/images/default.png}" alt="Product Image" class="img-thumbnail" style="width: 70px; height: 70px;">
+                                </div>
+                                <div class="product-details">
+                                    <h4 th:text="${product.productName}">Men's Basic Cotton T-Shirt</h4>
+                                    <div class="product-sku">
+                                        Size:
+                                        <span th:each="ps, stat : ${product.productSizes}">
+                                            <span th:text="${ps.size.sizeLabel}"></span><span th:if="${!stat.last}">, </span>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                        <td th:text="${product.id}">TSB001</td>
+                        <td th:text="${product.category.categoryName}">T-Shirts</td>
+                        <td th:text="${product.subcategory.subcategoryName}">T-Shirts</td>
+                        <td th:text="${product.brand.brandName}">Generic Brand</td>
+                        <td th:text="${product.formatPrice(product.price)} + ' USD'" class="price">$299</td>
+                        <td><span th:text="${product.stockQuantity}" class="stock-level stock-high">156</span></td>
+                        <td>
+                            <span th:text="${product.status}" th:classappend="${product.status == 'Active'} ? 'status-active' : 'status-inactive'" class="status-badge"></span>
+                        </td>
+                        <td th:text="${#dates.format(product.createdAt, 'MM/dd/yyyy ''at'' HH:mm')}">07/15/2025</td>
+                        <td>
+                            <div class="actions">
+                                <button class="action-btn action-view" th:attr="data-product-id=${product.id}" title="View Product">👁️</button>
+                                <button class="action-btn action-edit" data-product-id="" th:attr="data-product-id=${product.id}" title="Edit">✏️</button>
+                                <button class="action-btn action-delete" th:attr="data-product-id=${product.id}" title="Delete">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <!--
+            <div class="pagination">
+                <div class="pagination-info">
+                    Showing 1-5 of 1,247 products
+                </div>
+                <div class="pagination-controls">
+                    <button class="page-btn" disabled>‹ Previous</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">...</button>
+                    <button class="page-btn">249</button>
+                    <button class="page-btn">Next ›</button>
+                </div>
+            </div>
+            -->
+        </div>
+    </main>
+</div>
+
+<!-- Add/Edit Product Modal -->
+<div class="modal" id="productModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title" id="modalTitle">Add new Product</h3>
+            <button class="modal-close" id="modalClose">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="productForm">
+                <div class="form-group">
+                    <label class="form-label">Product Name *</label>
+                    <input type="text" class="form-input" id="productName" placeholder="Product name" required>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Category *</label>
+                        <select class="form-select" id="productCategory" required>
+                            <option value="" disabled selected>-- Select Category --</option>
+                            <option th:each="category : ${categories}" th:value="${category.id}" th:text="${category.categoryName}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Sub Category *</label>
+                        <select class="form-select" id="productSubCategory" required>
+                            <option value="" disabled selected>-- Select Sub Category --</option>
+                            <option th:each="sub : ${subcategories}" th:value="${sub.id}" th:text="${sub.subcategoryName}"></option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Brand *</label>
+                        <select class="form-select" id="productBrand" required>
+                            <option value="" disabled selected>-- Select Brand --</option>
+                            <option th:each="brand : ${brands}" th:value="${brand.id}" th:text="${brand.brandName}"></option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Product Description</label>
+                    <textarea class="form-textarea" id="productDescription" placeholder="Enter detailed product description"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <div class="form-group">
+                        <label class="form-label">Price *</label>
+                        <input type="text" class="form-input" id="productPrice" placeholder="0" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Product Images</label>
+                    <div class="image-upload" id="imageUpload">
+                        <div class="upload-icon">📷</div>
+                        <div class="upload-text">Drag and drop images here or click to select</div>
+                        <div class="upload-hint">Supported: JPG, PNG, GIF (max 5MB per image)</div>
+                        <input type="file" id="imageInput" multiple accept="image/*" style="display: none;">
+                    </div>
+                    <div class="image-preview" id="imagePreview"></div>
+                </div>
+
+                <div class="variant-section">
+                    <div class="variant-header">
+                        <h4 class="variant-title">Size and Quantity</h4>
+                        <button type="button" class="btn-add-variant" id="addVariantBtn">+ Size and Quantity</button>
+                    </div>
+                    <div id="variantsList">
+                        <!-- Variants will be added here dynamically -->
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">Status</label>
+                        <select class="form-select" id="productStatus">
+                            <option value="Active">Active</option>
+                            <option value="Inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-cancel" id="cancelBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn" form="productForm">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast"></div>
+<script src="/js/product-management.js"></script>
+</body>
+</html>

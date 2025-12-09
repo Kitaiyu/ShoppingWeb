@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StyleLegacy - Quản Lý Người Dùng</title>
+    <link rel="stylesheet" href="/css/users-management.css">
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <div th:replace="fragments/admin-sidebar :: sidebar"></div>
+
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+                <h1 class="header-title">User Management</h1>
+            </div>
+            <div class="header-user">
+                <span>Hello, Admin</span>
+                <div class="user-avatar">A</div>
+            </div>
+        </header>
+
+        <!-- Stats Cards -->
+<!--        <div class="stats-grid">-->
+<!--            <div class="stat-card">-->
+<!--                <div class="stat-header">-->
+<!--                    <div class="stat-title">Tổng Người Dùng</div>-->
+<!--                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">👥</div>-->
+<!--                </div>-->
+<!--                <div class="stat-value">8,547</div>-->
+<!--                <div class="stat-change positive">+5.2% so với tháng trước</div>-->
+<!--            </div>-->
+
+<!--            <div class="stat-card">-->
+<!--                <div class="stat-header">-->
+<!--                    <div class="stat-title">Người Dùng Mới Hôm Nay</div>-->
+<!--                    <div class="stat-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%)">🆕</div>-->
+<!--                </div>-->
+<!--                <div class="stat-value">47</div>-->
+<!--                <div class="stat-change positive">+12.3% so với hôm qua</div>-->
+<!--            </div>-->
+
+<!--            <div class="stat-card">-->
+<!--                <div class="stat-header">-->
+<!--                    <div class="stat-title">Tài Khoản Bị Khóa</div>-->
+<!--                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">🔒</div>-->
+<!--                </div>-->
+<!--                <div class="stat-value">23</div>-->
+<!--                <div class="stat-change negative">-18.5% so với tuần trước</div>-->
+<!--            </div>-->
+<!--        </div>-->
+
+        <!-- Search and Filter -->
+        <div class="filter-section">
+            <div class="filter-left">
+                <div class="search-box">
+                    <input type="text" id="searchInput" placeholder="Search"/>
+                    <button class="search-btn">🔍</button>
+                </div>
+                <select class="filter-select" id="statusFilter">
+                    <option value="">Status</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+                <select class="filter-select" id="roleFilter">
+                    <option value="">All Role</option>
+                    <option th:each="role : ${roles}" th:value="${role.id}"  th:text="${role.roleName}">Người dùng</option>
+                </select>
+            </div>
+        </div>
+
+        <!-- Users Table -->
+        <div class="users-table-container">
+            <div class="table-header">
+                <h3 class="table-title">List all Users</h3>
+            </div>
+
+            <div class="table-wrapper">
+                <table class="users-table" id="usersTable">
+                    <thead>
+                    <tr>
+                        <th>
+                        </th>
+                        <th>Avatar</th>
+                        <th>Name & Email</th>
+                        <th>Role</th>
+                        <th>Status</th>
+                        <th>Created At</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody id="usersTableBody">
+                    <tr th:each="user : ${users}" th:id="'userRow-' + ${user.id}" th:attr="data-user-id=${user.id}">
+                        <td>
+                        </td>
+                        <td>
+                            <div class="user-avatar-table">
+                                <img th:if="${user.avatar != null}" th:src="@{'/avatar/' + ${user.id}}" alt="Avatar" />
+                                <img th:if="${user.avatar == null}" th:src="@{/images/default.png}" alt="Avatar" />
+                            </div>
+                        </td>
+                        <td>
+                            <div class="user-info">
+                                <div class="user-details">
+                                    <h4 class="user-fullname" th:text="${user.fullName}">...</h4>
+                                    <p class="user-email" th:text="${user.email}">...</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td>
+                            <span class="user-role role-badge"
+                                  th:classappend="' role-' + ${#strings.replace(user.role.roleName.toLowerCase(), 'role_', '')}"
+                                  th:text="${#strings.replace(user.role.roleName, 'ROLE_', '')}">Vai trò
+                            </span>
+                        </td>
+                        <td>
+                            <span class="user-status status-badge"
+                                  th:classappend="${user.status.toLowerCase() == 'active'} ? ' status-active' : ' status-blocked'"
+                                  th:text="${user.status}">
+                                Trạng thái
+                            </span>
+                        </td>
+                        <td th:text="${#dates.format(user.createdAt, 'dd/MM/yyyy ''at'' HH:mm')}">10/03/2024</td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="action-btn btn-success" th:onclick="'editUser(' + ${user.id} + ')'" title="Chỉnh sửa">✏️
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination-container">
+                <div class="pagination-info">
+                </div>
+                <div class="pagination" id="pagination">
+                    <button class="page-btn" disabled>‹</button>
+                    <button class="page-btn active">1</button>
+                    <button class="page-btn">2</button>
+                    <button class="page-btn">3</button>
+                    <button class="page-btn">›</button>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Edit User Modal -->
+<div class="modal-overlay" id="editUserModal">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Edit User</h3>
+            <button class="modal-close" id="closeEditModal">✕</button>
+        </div>
+        <div class="modal-body">
+            <form id="editUserForm" action="/admin/users/update" method="post" enctype="multipart/form-data">
+                <input type="hidden" id="editUserId" name="id"/>
+
+                <div class="form-group">
+                    <label for="editFullName">Full Name</label>
+                    <input type="text" id="editFullName" name="fullName" required/>
+                </div>
+
+                <div class="form-group">
+                    <label for="editEmail">Email</label>
+                    <input type="email" id="editEmail" name="email" required/>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editRole">Role</label>
+                        <select id="editRole" name="role.id" required></select>
+                    </div>
+                    <div class="form-group">
+                        <label for="editStatus">Status</label>
+                        <select id="editStatus" name="status" required>
+                            <option value="active">Active</option>
+                            <option value="inactive">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="editPhone">Phone Number</label>
+                    <input type="tel" id="editPhone" name="phoneNumber"/>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelEditBtn">Hủy</button>
+            <button type="submit" form="editUserForm" class="btn btn-primary">Cập Nhật</button>
+        </div>
+    </div>
+</div>
+
+<!-- Notification -->
+<div class="notification" id="notification">
+    <div class="notification-content">
+        <span class="notification-icon"></span>
+        <span class="notification-message"></span>
+    </div>
+</div>
+
+<script src="/js/users-management.js"></script>
+</body>
+</html>

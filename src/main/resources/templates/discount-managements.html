@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StyleLegacy - Discount Management</title>
+    <link rel="stylesheet" href="/css/discount-management.css">
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- Sidebar Overlay -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Sidebar -->
+    <div th:replace="fragments/admin-sidebar :: sidebar"></div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="sidebar-toggle" id="sidebarToggle">☰</button>
+                <h1 class="header-title">Discount Management</h1>
+            </div>
+            <div class="header-user">
+                <span>Hello, Admin</span>
+                <div class="user-avatar">A</div>
+            </div>
+        </header>
+
+        <!-- Discount Stats -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-title">Total Discount Code</div>
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%)">🏷️</div>
+                </div>
+                <div class="stat-value" id="totalDiscountCount">0</div>
+<!--                <div class="stat-change positive">+3 new codes this week</div>-->
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-title">Active</div>
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)">✅</div>
+                </div>
+                <div class="stat-value" id="activeDiscountCount">0</div>
+<!--                <div class="stat-change positive">+2 compared to last week</div>-->
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-header">
+                    <div class="stat-title">Used</div>
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%)">📈</div>
+                </div>
+                <div class="stat-value" id="usedDiscountCount">0</div>
+<!--                <div class="stat-change positive">+18.5% compared to last month</div>-->
+            </div>
+        </div>
+
+        <!-- Actions Bar -->
+        <div class="actions-bar">
+            <div class="search-container">
+                <input type="text" class="search-input" placeholder="Search Discount..." id="searchInput">
+                <span class="search-icon">🔍</span>
+            </div>
+            <div class="filter-container">
+                <select class="filter-select" id="statusFilter">
+                    <option value="">All</option>
+                    <option value="active">Active</option>
+                    <option value="inactive">Inactive</option>
+                </select>
+                <button class="btn btn-primary" id="addDiscountBtn">
+                    <span class="btn-icon">➕</span>
+                    Add new discount code
+                </button>
+            </div>
+        </div>
+
+        <!-- Discounts Table -->
+        <div class="table-container">
+            <div class="table-header">
+                <h3 class="table-title">List of Discount Codes</h3>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table" id="discountsTable">
+                    <thead>
+                    <tr>
+                        <th>Code</th>
+                        <th>Description</th>
+                        <th>Percentage</th>
+                        <th>Available</th>
+                        <th>Start Date</th>
+                        <th>End Date</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <td><span class="code-badge">SUMMER2025</span></td>
+                        <td>Summer 2025 Discount</td>
+                        <td class="discount-value">20%</td>
+                        <td>145/500</td>
+                        <td>01/06/2025</td>
+                        <td>31/08/2025</td>
+                        <td><span class="status-badge status-active">Active</span></td>
+                        <td>
+                            <div class="action-buttons">
+                                <button class="btn-action btn-edit" onclick="editDiscount(1)">✏️</button>
+                                <button class="btn-action btn-delete" onclick="deleteDiscount(1)">🗑️</button>
+                            </div>
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination-container">
+            <div class="pagination-info">
+<!--                Showing 1-3 of 24 discount codes-->
+            </div>
+            <div class="pagination-controls">
+                <button class="pagination-btn" disabled>‹ Previous</button>
+                <button class="pagination-btn active">1</button>
+                <button class="pagination-btn">2</button>
+                <button class="pagination-btn">3</button>
+                <button class="pagination-btn">Next ›</button>
+            </div>
+        </div>
+    </main>
+</div>
+
+<!-- Add/Edit Discount Modal -->
+<div class="modal-overlay" id="discountModal">
+    <div class="modal">
+        <div class="modal-header">	
+            <h3 class="modal-title" id="modalTitle">Add new Discount</h3>
+            <button class="modal-close" id="closeModal">✕</button>
+        </div>
+        <form class="modal-body" id="discountForm">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="discountCode">Code *</label>
+                    <input type="text" id="discountCode" name="code" class="form-input" placeholder="e.g., SUMMER2025" required>
+                </div>
+                <div class="form-group">
+                    <label for="discountValue">Percentage *</label>
+                    <input type="number" id="discountValue" name="value" class="form-input" placeholder="e.g., 20" required>
+                    <span class="input-suffix" id="valueSuffix">%</span>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="startDate">Start Date *</label>
+                    <input type="date" id="startDate" name="startDate" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label for="endDate">End Date *</label>
+                    <input type="date" id="endDate" name="endDate" class="form-input" required>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="maxUses">Available Quantity</label>
+                    <input type="number" id="maxUses" name="maxUses" class="form-input" placeholder="e.g., 1000">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" name="description" class="form-textarea" rows="3" placeholder="Enter description..."></textarea>
+            </div>
+
+            <div class="form-group">
+                <label class="checkbox-label">
+                    <input type="checkbox" id="isActive" name="isActive" checked>
+                    <span class="checkmark"></span>
+                    Active
+                </label>
+            </div>
+        </form>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelBtn">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="saveBtn" form="discountForm">Save</button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Notification -->
+<div class="toast" id="toast">
+    <div class="toast-content">
+        <span class="toast-icon" id="toastIcon">✅</span>
+        <span class="toast-message" id="toastMessage">Operation successful!</span>
+    </div>
+    <button class="toast-close" id="toastClose">✕</button>
+</div>
+
+<script src="/js/discount-management.js"></script>
+</body>
+</html>

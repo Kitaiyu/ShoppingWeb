@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Order Detail - StyleLegacy</title>
+
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/css/styles.css">
+
+    <style>
+        .star-rating .star {
+            font-size: 1.5rem;
+            color: #ccc;
+            cursor: pointer;
+        }
+
+        .star-rating .star.selected {
+            color: #ffc107;
+        }
+    </style>
+</head>
+<body style="padding-top: 100px;">
+<!-- Navigation Bar -->
+<div th:replace="fragments/header-navbar :: navbar"></div>
+
+<!-- Order Detail Header -->
+<section class="about-hero">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h1 class="fw-bold mb-2" id="orderTitle" th:text="'Order #' + ${order.displayCode}">Order
+                    #ORD-2024-001</h1>
+                <p class="text-muted mb-0" id="orderDate"
+                   th:text="'Placed on ' + ${#dates.format(order.orderDate, 'MMMM dd, yyyy')}">
+                    Placed on January 15, 2024
+                </p>
+            </div>
+            <div class="col-md-6 text-md-end">
+                <div class="d-flex flex-column flex-md-row gap-2 justify-content-md-end">
+<!--                    <button class="btn btn-outline-dark btn-sm" onclick="printOrder()">-->
+<!--                        <i class="bi bi-printer me-2"></i>Print Order-->
+<!--                    </button>-->
+<!--                    <button class="btn btn-outline-dark btn-sm" onclick="downloadInvoice()">-->
+<!--                        <i class="bi bi-download me-2"></i>Download Invoice-->
+<!--                    </button>-->
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Order Details -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <!-- Order Items -->
+            <div class="col-lg-8 mb-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Order Items</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div id="orderItems">
+                            <div th:each="detail : ${orderDetails}" class="d-flex border-bottom p-3 align-items-center">
+                                <img th:if="${detail.product.image == null}"
+                                     th:src="@{/images/default.png}" class="img-thumbnail me-3"
+                                     style="width: 80px;">
+                                <img th:if="${detail.product.image != null}"
+                                     th:src="@{'/products/image/' + ${detail.product.id}}" class="img-thumbnail me-3"
+                                     style="width: 80px;">
+                                <div class="flex-fill">
+                                    <h6 th:text="${detail.product.productName}">Áo thun</h6>
+                                    <p class="mb-0 text-muted">Size: <span th:text="${detail.size.sizeLabel}">M</span>
+                                    </p>
+                                </div>
+                                <div>
+                                    <span th:text="${#numbers.formatDecimal(detail.unitPrice, 0, 'POINT', 0, 'COMMA')+' VNĐ' + ' x ' + detail.quantity}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- Order Summary -->
+            <div class="col-lg-4">
+                <!-- Payment Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Payment</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="paymentInfo">
+                            <p><span th:text="${order.paymentMethod}"></span></p></div>
+                    </div>
+                </div>
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Status</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="orderStatus">
+                            <p th:text="${order.status.statusName}"></p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="orderSummary">
+                            <p>Total: <span
+                                    th:text="${#numbers.formatDecimal(order.totalAmountBeforeDiscount, 0, 'POINT', 0, 'COMMA')} + ' VNĐ'">99.98 $</span>
+                            </p>
+                            <p>Total(After discount): <span
+                                    th:text="${#numbers.formatDecimal(order.totalAmount, 0, 'POINT', 0, 'COMMA')} + ' VNĐ'">99.98 $</span>
+                            </p>
+                            <p th:if="${order.discount != null}">Discount: <span
+                                    th:text="${order.discount.discountPercentage} + '%'">10%</span></p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Shipping Information -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Shipping Information</h5>
+                    </div>
+                    <div class="card-body">
+                        <div id="shippingInfo">
+                            <p>Phone Number: <span th:text="${order.phoneNumber}">99.98 $</span></p>
+                            <p>Address: <span th:text="${order.shippingAddress}"></span></p></div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Order Actions -->
+<section class="py-4 bg-light">
+    <div class="container">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title mb-3">Need Help?</h5>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-headset fs-4 text-primary me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Contact Support</h6>
+                                <p class="text-muted small mb-0">Get help with your order</p>
+                            </div>
+                            <button class="btn btn-outline-primary btn-sm ms-auto" onclick="contactSupport()">
+                                Contact
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <div id="cancelButton" th:if="${order.status.statusName == 'Pending'}"
+                             class="d-flex align-items-center">
+                            <i class="bi bi-arrow-return-left fs-4 text-warning me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Return Items</h6>
+                                <p class="text-muted small mb-0">Start a return request</p>
+                            </div>
+                            <button type="button"
+                                    class="btn btn-outline-warning btn-sm ms-auto"
+                                    th:attr="data-order-id=${order.id}"
+                                    onclick="cancelOrderFromAttr(this)">
+                                Return
+                            </button>
+                        </div>
+
+                        <div id="feedbackButton"
+                             th:if="${order.status.statusName == 'Delivered' and !allItemsReviewed}"
+                             class="d-flex align-items-center">
+                            <i class="bi bi-chat-square-dots fs-4 text-success me-3"></i>
+                            <div>
+                                <h6 class="mb-1">Feedback</h6>
+                                <p class="text-muted small mb-0">Share your experience</p>
+                            </div>
+                            <button type="button"
+                                    class="btn btn-outline-success btn-sm ms-auto"
+                                    th:attr="data-order-id=${order.id}"
+                                    onclick="openFeedbackModal(this)">
+                                Feedback
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Toast Notification -->
+<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 9999" th:if="${toastMessage}">
+    <div th:id="'toast'" th:class="'toast align-items-center text-bg-' + ${toastType} + ' border-0'" role="alert"
+         aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body" th:text="${toastMessage}">
+                <!-- Nội dung toast -->
+            </div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"
+                    aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal fade" id="feedbackModal" tabindex="-1" aria-labelledby="feedbackModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form id="feedbackForm" onsubmit="submitFeedback(event)">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="feedbackModalLabel">Leave Feedback</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="feedbackBody">
+                    <!-- Dữ liệu đánh giá sẽ được load bằng JavaScript -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit Feedback</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!--Chat-->
+<div th:if="${currentUser != null and roleId == 2}">
+    <div th:replace="fragments/chat :: chatWidget"></div>
+</div>
+<!-- Footer -->
+<div th:replace="fragments/footer :: footer"></div>
+
+<div th:replace="fragments/cart :: cart"></div>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<!-- Custom JS -->
+<script src="/js/script.js"></script>
+<script>
+    function cancelOrderFromAttr(button) {
+        const orderId = button.getAttribute('data-order-id');
+        const cancelDiv = button.closest('#cancelButton');
+        cancelOrder(orderId, cancelDiv);
+    }
+
+
+    function cancelOrder(orderId, cancelDiv) {
+        if (!confirm('Are you sure you want to cancel this order?')) return;
+
+        fetch(`/order/${orderId}/cancel`, {
+            method: 'POST',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(res => res.json())
+            .then(data => {
+                showToast(data.message, 'success');
+
+                const statusDiv = document.getElementById("orderStatus");
+                if (statusDiv) {
+                    statusDiv.innerHTML = "<p class='text-danger fw-bold'>Cancelled</p>";
+                }
+
+                // Ẩn cả div chứa nút
+                if (cancelDiv) {
+                    cancelDiv.remove();
+                }
+            })
+            .catch(err => {
+                showToast("Failed to cancel order", 'danger');
+                console.error(err);
+            });
+    }
+
+
+    function showToast(message, type = 'success') {
+        const toastContainer = document.createElement('div');
+        toastContainer.className = 'position-fixed bottom-0 end-0 p-3';
+        toastContainer.style.zIndex = '9999';
+
+        toastContainer.innerHTML = `
+            <div class="toast align-items-center text-bg-${type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                </div>
+            </div>`;
+
+        document.body.appendChild(toastContainer);
+
+        const toast = new bootstrap.Toast(toastContainer.querySelector('.toast'));
+        toast.show();
+
+        // Tự động xóa toast sau 5s
+        setTimeout(() => toastContainer.remove(), 5000);
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        let lastScroll = 0;
+        const navbar = document.getElementById('mainNavbar');
+        if (!navbar) return;
+
+        window.addEventListener('scroll', () => {
+            const currentScroll = window.pageYOffset;
+
+            if (currentScroll > lastScroll && currentScroll > 100) {
+                navbar.style.transform = 'translateY(-100%)';
+            } else {
+                navbar.style.transform = 'translateY(0)';
+            }
+
+            lastScroll = currentScroll;
+        });
+    });
+
+    function openFeedbackModal(button) {
+        const orderId = button.getAttribute('data-order-id');
+
+        fetch(`/api/order/${orderId}/feedback-items`, {
+            credentials: 'include',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+            .then(res => {
+                if (res.status === 401) {
+                    showToast("You must be logged in to give feedback.", "warning");
+                    throw new Error("Unauthorized");
+                }
+
+                if (!res.headers.get("content-type")?.includes("application/json")) {
+                    showToast("Unexpected response. Please try again later.", "danger");
+                    throw new Error("Non-JSON response");
+                }
+
+                return res.json(); // chỉ parse JSON nếu chắc chắn là JSON
+            })
+            .then(data => {
+                if (data.length === 0) {
+                    showToast("You have already reviewed all items in this order.", "info");
+                    document.getElementById("feedbackButton")?.remove();
+                    return;
+                }
+
+                const body = document.getElementById("feedbackBody");
+                body.innerHTML = "";
+
+                data.forEach((item, index) => {
+                    body.innerHTML += `
+                <div class="border rounded p-3 mb-3">
+                    <input type="hidden" name="orderDetailIds" value="${item.orderDetailId}">
+                    <input type="hidden" name="productIds" value="${item.productId}">
+                    <div class="d-flex align-items-center mb-2">
+                        <img src="/products/image/${item.productId}" alt="${item.productName}" style="width: 60px;" class="me-3">
+                        <strong>${item.productName}</strong> (Size: ${item.sizeLabel})
+                    </div>
+                    <div class="mb-2">
+                        <label>Rating:</label>
+                        <div class="star-rating" data-index="${index}">
+                            <input type="hidden" name="ratings" value="" required>
+                            <i class="bi bi-star-fill star" data-value="1"></i>
+                            <i class="bi bi-star-fill star" data-value="2"></i>
+                            <i class="bi bi-star-fill star" data-value="3"></i>
+                            <i class="bi bi-star-fill star" data-value="4"></i>
+                            <i class="bi bi-star-fill star" data-value="5"></i>
+                        </div>
+                    </div>
+                    <div>
+                        <label>Comment:</label>
+                        <textarea name="comments" class="form-control" rows="2" placeholder="Write your review..." required></textarea>
+                    </div>
+                </div>
+            `;
+                });
+
+                // Gắn sự kiện cho sao
+                document.querySelectorAll('.star-rating').forEach(starGroup => {
+                    const stars = starGroup.querySelectorAll('.star');
+                    const hiddenInput = starGroup.querySelector('input[name="ratings"]');
+
+                    stars.forEach(star => {
+                        star.addEventListener('click', () => {
+                            const rating = parseInt(star.getAttribute('data-value'));
+                            hiddenInput.value = rating;
+                            stars.forEach(s => {
+                                const val = parseInt(s.getAttribute('data-value'));
+                                s.classList.toggle('selected', val <= rating);
+                            });
+                        });
+                    });
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('feedbackModal'));
+                modal.show();
+            })
+            .catch(err => {
+                console.error(err);
+                showToast("Failed to load feedback form", "danger");
+            });
+    }
+
+
+    function submitFeedback(event) {
+        event.preventDefault();
+
+        const form = document.getElementById("feedbackForm");
+        const productIds = Array.from(form.querySelectorAll('input[name="productIds"]')).map(e => e.value);
+        const ratings = Array.from(form.querySelectorAll('input[name="ratings"]')).map(e => parseInt(e.value));
+        const comments = Array.from(form.querySelectorAll('textarea[name="comments"]')).map(e => e.value);
+        const orderDetailIds = Array.from(form.querySelectorAll('input[name="orderDetailIds"]')).map(e => e.value);
+
+        for (let i = 0; i < ratings.length; i++) {
+            if (isNaN(ratings[i]) || ratings[i] < 1 || ratings[i] > 5) {
+                showToast("Please select a star rating (1-5) for all items.", "warning");
+                return;
+            }
+        }
+
+        const feedbacks = productIds.map((productId, index) => ({
+            productId: parseInt(productId),
+            orderDetailId: parseInt(orderDetailIds[index]),
+            rating: ratings[index],
+            comment: comments[index]
+        }));
+
+        fetch('/api/reviews/submit', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
+            body: JSON.stringify(feedbacks),
+            credentials: 'include' // thêm để chắc chắn gửi cookie xác thực nếu cần
+        })
+            .then(res => {
+                if (!res.ok) {
+                    if (res.status === 401) {
+                        showToast("You must be logged in to submit feedback.", "warning");
+                    } else {
+                        showToast("Server error: " + res.status, "danger");
+                    }
+                    throw new Error("HTTP error " + res.status);
+                }
+
+                const contentType = res.headers.get("content-type");
+                if (!contentType || !contentType.includes("application/json")) {
+                    showToast("Unexpected response from server.", "danger");
+                    throw new Error("Invalid content type");
+                }
+
+                return res.json();
+            })
+            .then(data => {
+                showToast(data.message || "Feedback submitted!", "success");
+
+                // Đóng modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('feedbackModal'));
+                modal.hide();
+
+                // Ẩn nút Feedback
+                document.getElementById("feedbackButton")?.remove();
+            })
+            .catch(err => {
+                console.error(err);
+                // showToast đã được gọi bên trên nếu lỗi; không cần gọi lại ở đây
+            });
+    }
+
+</script>
+</body>
+</html>
